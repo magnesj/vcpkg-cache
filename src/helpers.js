@@ -33,7 +33,7 @@ export const getExistingCacheEntries = async (token, prefix = "") => {
     const cacheEntries = await octokit.paginate(octokit.rest.actions.getActionsCacheList, {
       ...github.context.repo,
       key: cacheKeyPrefix,
-      per_page: 100,
+      per_page: 150,
     });
 
     return cacheEntries.map((c) => c.key);
