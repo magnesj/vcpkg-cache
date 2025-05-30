@@ -6,7 +6,8 @@ export const CACHE_FOLDER = ".vcpkg-cache";
 
 export const CACHE_KEY_PREFIX = "vcpkg/";
 
-export const resolvedCacheFolder = () => path.resolve(CACHE_FOLDER);
+export const resolvedCacheFolder = (prefix = "") =>
+  prefix ? path.resolve(prefix, CACHE_FOLDER) : path.resolve(CACHE_FOLDER);
 
 export const getCacheKey = (filename) => {
   const abiHash = filename.slice(0, filename.length - ".zip".length);
@@ -14,13 +15,14 @@ export const getCacheKey = (filename) => {
   return `${CACHE_KEY_PREFIX}${abiHash}`;
 };
 
-export const getCachePath = (cacheKey) => {
+export const getCachePath = (cacheKey, prefix = "") => {
   const abiHash = cacheKey.slice(CACHE_KEY_PREFIX.length);
   const filename = `${abiHash}.zip`;
   const directory = abiHash.slice(0, 2);
 
   // Relative path to avoid mismatched cache versions across environments
-  return path.join(CACHE_FOLDER, directory, filename).split(path.sep).join("/");
+  const base = prefix ? path.join(prefix, CACHE_FOLDER) : CACHE_FOLDER;
+  return path.join(base, directory, filename).split(path.sep).join("/");
 };
 
 export const getExistingCacheEntries = async (token) => {

@@ -69388,7 +69388,8 @@ const CACHE_FOLDER = ".vcpkg-cache";
 
 const CACHE_KEY_PREFIX = "vcpkg/";
 
-const resolvedCacheFolder = () => path__WEBPACK_IMPORTED_MODULE_2__.resolve(CACHE_FOLDER);
+const resolvedCacheFolder = (prefix = "") =>
+  prefix ? path__WEBPACK_IMPORTED_MODULE_2__.resolve(prefix, CACHE_FOLDER) : path__WEBPACK_IMPORTED_MODULE_2__.resolve(CACHE_FOLDER);
 
 const getCacheKey = (filename) => {
   const abiHash = filename.slice(0, filename.length - ".zip".length);
@@ -69396,13 +69397,14 @@ const getCacheKey = (filename) => {
   return `${CACHE_KEY_PREFIX}${abiHash}`;
 };
 
-const getCachePath = (cacheKey) => {
+const getCachePath = (cacheKey, prefix = "") => {
   const abiHash = cacheKey.slice(CACHE_KEY_PREFIX.length);
   const filename = `${abiHash}.zip`;
   const directory = abiHash.slice(0, 2);
 
   // Relative path to avoid mismatched cache versions across environments
-  return path__WEBPACK_IMPORTED_MODULE_2__.join(CACHE_FOLDER, directory, filename).split(path__WEBPACK_IMPORTED_MODULE_2__.sep).join("/");
+  const base = prefix ? path__WEBPACK_IMPORTED_MODULE_2__.join(prefix, CACHE_FOLDER) : CACHE_FOLDER;
+  return path__WEBPACK_IMPORTED_MODULE_2__.join(base, directory, filename).split(path__WEBPACK_IMPORTED_MODULE_2__.sep).join("/");
 };
 
 const getExistingCacheEntries = async (token) => {
@@ -69448,7 +69450,8 @@ __nccwpck_require__.r(__webpack_exports__);
 
 
 const token = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput("token", { required: true });
-const vcpkgArchivePath = (0,_helpers_js__WEBPACK_IMPORTED_MODULE_4__/* .resolvedCacheFolder */ .p8)();
+const prefix = _actions_core__WEBPACK_IMPORTED_MODULE_1__.getInput("prefix") || "";
+const vcpkgArchivePath = (0,_helpers_js__WEBPACK_IMPORTED_MODULE_4__/* .resolvedCacheFolder */ .p8)(prefix);
 
 await _actions_core__WEBPACK_IMPORTED_MODULE_1__.group("Saving vcpkg cache", async () => {
   const actionsCaches = new Set(await (0,_helpers_js__WEBPACK_IMPORTED_MODULE_4__/* .getExistingCacheEntries */ .s1)(token));
@@ -69470,7 +69473,7 @@ await _actions_core__WEBPACK_IMPORTED_MODULE_1__.group("Saving vcpkg cache", asy
         }
 
         const cacheKey = (0,_helpers_js__WEBPACK_IMPORTED_MODULE_4__/* .getCacheKey */ .et)(file.name);
-        const cacheSavePath = (0,_helpers_js__WEBPACK_IMPORTED_MODULE_4__/* .getCachePath */ .Ej)(cacheKey);
+        const cacheSavePath = (0,_helpers_js__WEBPACK_IMPORTED_MODULE_4__/* .getCachePath */ .Ej)(cacheKey, prefix);
 
         if (actionsCaches.has(cacheKey)) {
           _actions_core__WEBPACK_IMPORTED_MODULE_1__.info(`Skipping '${cacheKey}' as already present in cache`);

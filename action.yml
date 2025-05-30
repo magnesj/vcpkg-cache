@@ -7,6 +7,9 @@ inputs:
   token:
     description: "GitHub workflow token"
     required: true
+  prefix:
+    description: "Custom prefix for the cache path"
+    required: false
 outputs:
   path:
     description: "Absolute path to the written cache"

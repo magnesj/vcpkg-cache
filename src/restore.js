@@ -3,7 +3,8 @@ import * as core from "@actions/core";
 import { CACHE_KEY_PREFIX, getCachePath, getExistingCacheEntries, resolvedCacheFolder } from "./helpers.js";
 
 const token = core.getInput("token", { required: true });
-core.setOutput("path", resolvedCacheFolder());
+const prefix = core.getInput("prefix") || "";
+core.setOutput("path", resolvedCacheFolder(prefix));
 
 await core.group("Restoring vcpkg cache", async () => {
   const actionsCaches = await getExistingCacheEntries(token);
@@ -15,7 +16,7 @@ await core.group("Restoring vcpkg cache", async () => {
 
   await Promise.all(
     actionsCaches.map(async (cacheKey) => {
-      const cacheRestorePath = await getCachePath(cacheKey);
+      const cacheRestorePath = getCachePath(cacheKey, prefix);
       core.info(`Restoring '${cacheKey}' to '${cacheRestorePath}'`);
 
       await cache.restoreCache([cacheRestorePath], cacheKey, undefined, undefined, true);

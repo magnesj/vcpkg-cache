@@ -5,7 +5,8 @@ import * as fs from "fs/promises";
 import { getCacheKey, getCachePath, getExistingCacheEntries, resolvedCacheFolder } from "./helpers.js";
 
 const token = core.getInput("token", { required: true });
-const vcpkgArchivePath = resolvedCacheFolder();
+const prefix = core.getInput("prefix") || "";
+const vcpkgArchivePath = resolvedCacheFolder(prefix);
 
 await core.group("Saving vcpkg cache", async () => {
   const actionsCaches = new Set(await getExistingCacheEntries(token));
@@ -27,7 +28,7 @@ await core.group("Saving vcpkg cache", async () => {
         }
 
         const cacheKey = getCacheKey(file.name);
-        const cacheSavePath = getCachePath(cacheKey);
+        const cacheSavePath = getCachePath(cacheKey, prefix);
 
         if (actionsCaches.has(cacheKey)) {
           core.info(`Skipping '${cacheKey}' as already present in cache`);
