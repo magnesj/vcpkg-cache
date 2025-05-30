@@ -32,6 +32,7 @@ Add `TAServers/vcpkg-cache` to your workflow before you run CMake configure (or 
   uses: TAServers/vcpkg-cache@v3
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
+    prefix: optional-custom-prefix # Optional prefix for the cache key, defaults to `vcpkg/` Can be used to separate caches for different platforms of compilers
 ```
 
 Tell `vcpkg` to use the restored directory for binary caching:
