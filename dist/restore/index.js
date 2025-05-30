@@ -69397,7 +69397,9 @@ const getCacheKey = (filename, prefix = "") => {
 };
 
 const getCachePath = (cacheKey) => {
-  const abiHash = cacheKey.slice(CACHE_KEY_PREFIX.length);
+  // Find the prefix (everything up to and including the last '/')
+  const lastSlash = cacheKey.lastIndexOf('/');
+  const abiHash = cacheKey.slice(lastSlash + 1);
   const filename = `${abiHash}.zip`;
   const directory = abiHash.slice(0, 2);
 
