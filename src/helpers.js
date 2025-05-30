@@ -4,14 +4,14 @@ import * as path from "path";
 
 export const CACHE_FOLDER = ".vcpkg-cache";
 
-export const CACHE_KEY_PREFIX = "vcpkg/";
+export const getCacheKeyPrefix = (prefix) =>
+  prefix && prefix.length > 0 ? `${prefix}/` : "vcpkg/";
 
 export const resolvedCacheFolder = () => path.resolve(CACHE_FOLDER);
 
-export const getCacheKey = (filename) => {
+export const getCacheKey = (filename, prefix = "") => {
   const abiHash = filename.slice(0, filename.length - ".zip".length);
-
-  return `${CACHE_KEY_PREFIX}${abiHash}`;
+  return `${getCacheKeyPrefix(prefix)}${abiHash}`;
 };
 
 export const getCachePath = (cacheKey) => {
@@ -23,13 +23,14 @@ export const getCachePath = (cacheKey) => {
   return path.join(CACHE_FOLDER, directory, filename).split(path.sep).join("/");
 };
 
-export const getExistingCacheEntries = async (token) => {
+export const getExistingCacheEntries = async (token, prefix = "") => {
   const octokit = github.getOctokit(token);
 
   try {
+    const cacheKeyPrefix = getCacheKeyPrefix(prefix);
     const cacheEntries = await octokit.paginate(octokit.rest.actions.getActionsCacheList, {
       ...github.context.repo,
-      key: CACHE_KEY_PREFIX,
+      key: cacheKeyPrefix,
       per_page: 100,
     });
 
