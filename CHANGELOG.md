@@ -14,6 +14,16 @@ The valid change types are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
+## [3.4.2] - [No PR](#)
+
+### Changed
+
+- Updated Node.js version to 24
+
+### Security
+
+- Updated `@actions/*` packages to latest versions to resolve NPM audit vulnerabilities
+
 ## [3.4.1] - [#14](https://github.com/TAServers/vcpkg-cache/pull/14)
 
 ### Fixed
