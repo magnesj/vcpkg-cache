@@ -2,32 +2,34 @@ import * as cache from "@actions/cache";
 import * as core from "@actions/core";
 import {
   getCacheKeyPrefix,
-  getCachePath,
+  getCacheKeyInput,
+  getBundleSaveCacheKey,
+  getBundleRestoreKeyPrefix,
   resolvedCacheFolder,
-  getExistingCacheEntriesForCurrentBranch,
 } from "./helpers.js";
 
-const token = core.getInput("token", { required: true });
 const prefix = getCacheKeyPrefix();
-core.setOutput("path", resolvedCacheFolder());
+const cacheKey = getCacheKeyInput();
+const vcpkgCachePath = resolvedCacheFolder();
+
+core.setOutput("path", vcpkgCachePath);
 
 await core.group("Restoring vcpkg cache", async () => {
   try {
-    const actionsCaches = await getExistingCacheEntriesForCurrentBranch(token, prefix);
+    const runId = process.env.GITHUB_RUN_ID;
+    const saveCacheKey = getBundleSaveCacheKey(prefix, cacheKey, runId);
+    const restoreKeyPrefix = getBundleRestoreKeyPrefix(prefix, cacheKey);
 
-    if (actionsCaches.size < 1) {
-      core.info(`No cache entries found with prefix '${prefix}'`);
-      return;
+    core.info(`Restoring cache with key prefix '${restoreKeyPrefix}'`);
+    const restoredKey = await cache.restoreCache([vcpkgCachePath], saveCacheKey, [restoreKeyPrefix]);
+
+    if (restoredKey) {
+      core.info(`Cache restored from '${restoredKey}'`);
+    } else {
+      core.info(`No cache found with key prefix '${restoreKeyPrefix}'`);
     }
 
-    await Promise.all(
-      Array.from(actionsCaches).map(async (cacheKey) => {
-        const cacheRestorePath = getCachePath(cacheKey, prefix);
-        core.info(`Restoring '${cacheKey}' to '${cacheRestorePath}'`);
-
-        await cache.restoreCache([cacheRestorePath], cacheKey, undefined, undefined, true);
-      })
-    );
+    core.saveState("saveCacheKey", saveCacheKey);
   } catch (error) {
     core.setFailed(error);
   }
