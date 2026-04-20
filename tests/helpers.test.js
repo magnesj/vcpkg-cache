@@ -1,18 +1,14 @@
 import { expect, test } from "vitest";
-import { getCacheKey, getCachePath } from "../src/helpers";
+import { getBundleSaveCacheKey, getBundleRestoreKeyPrefix } from "../src/helpers";
 
-test("getCachePath should return binary archive path", () => {
-  const cacheKey = "vcpkg/0cf4d6a517d4d8a3014b4f7e3ff721677c12f9bf443ce894521db388d8f2506b";
+test("getBundleSaveCacheKey should return key with run ID suffix", () => {
+  const key = getBundleSaveCacheKey("vcpkg/", "abc123", "42");
 
-  const path = getCachePath(cacheKey, "vcpkg/");
-
-  expect(path).toBe(".vcpkg-cache/0c/0cf4d6a517d4d8a3014b4f7e3ff721677c12f9bf443ce894521db388d8f2506b.zip");
+  expect(key).toBe("vcpkg/abc123-42");
 });
 
-test("getCacheKey should return key for filename", () => {
-  const filename = "0cf4d6a517d4d8a3014b4f7e3ff721677c12f9bf443ce894521db388d8f2506b.zip";
+test("getBundleRestoreKeyPrefix should return key prefix for fallback restore", () => {
+  const prefix = getBundleRestoreKeyPrefix("vcpkg/", "abc123");
 
-  const key = getCacheKey(filename, "vcpkg/");
-
-  expect(key).toBe("vcpkg/0cf4d6a517d4d8a3014b4f7e3ff721677c12f9bf443ce894521db388d8f2506b");
+  expect(prefix).toBe("vcpkg/abc123-");
 });
