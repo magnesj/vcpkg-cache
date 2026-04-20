@@ -1,0 +1,51 @@
+name: Test Repo CI
+
+on:
+  push:
+    branches:
+      - copilot/create-test-repo-for-vcpkg-cache
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Restore the vcpkg binary cache using the bundle-based action from PR #3.
+      # On the first run, no cache exists and vcpkg compiles fmt from source.
+      # On subsequent runs, the restored bundle lets vcpkg skip compilation entirely.
+      - name: Restore vcpkg cache
+        id: vcpkg-cache
+        uses: magnesj/vcpkg-cache@copilot/optimize-cache-storage-structure
+        with:
+          cache-key: ${{ hashFiles('test-repo/vcpkg.json') }}-${{ runner.os }}
+
+      - name: Configure CMake
+        shell: bash
+        run: |
+          cmake -B build -S test-repo \
+            -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" \
+            -DCMAKE_BUILD_TYPE=Release
+        env:
+          # Point vcpkg's files binary cache at the directory managed by the action.
+          VCPKG_BINARY_SOURCES: "clear;files,${{ steps.vcpkg-cache.outputs.path }},readwrite"
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Run (Linux)
+        if: runner.os != 'Windows'
+        run: ./build/vcpkg-cache-test
+
+      - name: Run (Windows)
+        if: runner.os == 'Windows'
+        run: .\build\Release\vcpkg-cache-test.exe
